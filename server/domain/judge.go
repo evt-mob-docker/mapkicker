@@ -1,48 +1,53 @@
 package domain
 
 import (
-	"fmt"
-
-	"github.com/gorilla/websocket"
+	"log"
 )
 
 // Judge は、1つのマップキックセッションの進行役を表す。
 type Judge struct {
 	id           int
 	join         chan *Participant
-	participants []*Participant
-	history      []string
+	leave        chan *Participant
+	action       chan Action
+	participants map[*Participant]bool
+	history      []Broadcast
 	seq          int // Actionの整合性を確保するための、受理ずみActionの最後のsequence番号
 }
 
 // NewJudge は、指定したidを持つJudgeインスタンスを生成する。
 // このidはchallongeトーナメントの試合IDを用いるので、外部から指定されるべきである。
 func NewJudge(id int) *Judge {
-	return &Judge{
-		id:   id,
-		join: make(chan *Participant),
-		seq:  -1,
+	j := &Judge{
+		id:           id,
+		join:         make(chan *Participant),
+		leave:        make(chan *Participant),
+		action:       make(chan Action),
+		participants: make(map[*Participant]bool),
+		seq:          -1,
 	}
+	j.run()
+	return j
 }
 
-func (j *Judge) AddNewParticipant(socket *websocket.Conn) *Participant {
-	p := NewParticipant(socket)
-	fmt.Println("trying to join")
+// AddParticipant は、JudgeにParticipantを追加して、そのParticipantにこれまでJudgeが送信した全てのBroadcastを送信します。
+func (j *Judge) AddParticipant(p *Participant) {
+	log.Println("trying to join")
 	j.join <- p
-	fmt.Printf("Judge has %v participants now!\n", len(j.participants))
+	log.Printf("Judge has %v participants now!\n", len(j.participants))
 	for _, msg := range j.history {
-		p.socket.WriteMessage(websocket.TextMessage, []byte(msg))
+		p.Broadcast(msg)
 	}
-	return p
 }
 
-// Send はJudgeにActionを送る。validationが成功した場合はtrue、失敗するとfalseを返す。
+// Process はJudgeに処理すべきActionを送る。validationが成功した場合はtrue、失敗するとfalseを返す。
 // また、Judgeに属するParticipantにメッセージを送信する。
-func (j *Judge) Send(a Action) bool {
+func (j *Judge) process(a Action) bool {
 	if !j.validateSequence(a) {
 		return false
 	}
 	j.seq++
+	log.Printf("Action %v was received", a)
 	return true
 }
 
@@ -50,19 +55,27 @@ func (j *Judge) validateSequence(a Action) bool {
 	return a.seq == j.seq+1
 }
 
-func (j *Judge) Run() {
+func (j *Judge) run() {
 	go func() {
-		for p := range j.join {
-			j.participants = append(j.participants, p)
+		for {
+			select {
+			case p := <-j.join:
+				log.Println("Judge.run(): new participant are joinning")
+				j.participants[p] = true
+			case p := <-j.leave:
+				delete(j.participants, p)
+			case a := <-j.action:
+				j.process(a)
+			}
 		}
 	}()
-	fmt.Println("Judge is running")
+	log.Printf("Judge #%v is running\n", j.ID())
 }
 
-func (j *Judge) Share(msg string) {
-	j.history = append(j.history, msg)
-	for _, p := range j.participants {
-		p.socket.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("%v", msg)))
+func (j *Judge) Broadcast(b Broadcast) {
+	j.history = append(j.history, b)
+	for p := range j.participants {
+		p.Broadcast(b)
 	}
 }
 

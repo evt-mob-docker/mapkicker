@@ -1,16 +1,43 @@
 package domain
 
-import "github.com/gorilla/websocket"
-
 // Participant は、Mapkickへの参加者を表す。
 type Participant struct {
-	socket  *websocket.Conn
 	msgChan MessageChannel
-	j       *Judge
+	judge   *Judge
 }
 
-func NewParticipant(socket *websocket.Conn) *Participant {
-	return &Participant{
-		socket: socket,
+// NewParticipant は、新しいParticipantを生成し、judgeに紐付けて起動する。
+func NewParticipant(msgChan MessageChannel, j *Judge) *Participant {
+	p := &Participant{
+		msgChan: msgChan,
+		judge:   j,
 	}
+	p.run()
+	return p
+}
+
+func (p *Participant) run() {
+	for {
+		select {
+		case action := <-p.msgChan.Action():
+			p.judge.action <- action
+		case <-p.msgChan.Closed():
+			p.leave()
+		}
+	}
+}
+
+// Broadcast take broadcast
+func (p *Participant) Broadcast(b Broadcast) {
+	p.msgChan.Broadcast(b)
+}
+
+// ValidationError takes validation error
+func (p *Participant) ValidationError(e ValidationError) {
+	p.msgChan.ValidationError(e)
+}
+
+// Leave は、JudgeをLeaveする
+func (p *Participant) leave() {
+	p.judge.leave <- p
 }

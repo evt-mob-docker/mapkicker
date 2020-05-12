@@ -1,0 +1,86 @@
+package usecase
+
+import (
+	"log"
+	"mapkicker/domain"
+
+	"github.com/gorilla/websocket"
+)
+
+// MessageSocket は、websocket.Connを利用したdomain.MessageChannelの実装です
+type MessageSocket struct {
+	socket          *websocket.Conn
+	action          chan domain.Action
+	broadcast       chan domain.Broadcast
+	validationError chan domain.ValidationError
+	close           chan string
+}
+
+// NewMessageSocket は、websocketからMessageChannelを生成して、actionをlistenします
+func NewMessageSocket(conn *websocket.Conn) domain.MessageChannel {
+	ms := &MessageSocket{
+		socket:          conn,
+		action:          make(chan domain.Action),
+		broadcast:       make(chan domain.Broadcast),
+		validationError: make(chan domain.ValidationError),
+	}
+	go ms.listen()
+	go ms.run()
+	return ms
+}
+
+func (ms *MessageSocket) listen() {
+	for {
+		select {
+		case <-ms.close:
+			log.Println("closing...")
+			break
+		}
+	}
+}
+
+func (ms *MessageSocket) run() {
+	for {
+		if _, msg, err := ms.socket.ReadMessage(); err == nil {
+			log.Printf("WebSocket received action %v\n", string(msg))
+			ms.action <- domain.Action{}
+		} else {
+			break
+		}
+	}
+	if err := ms.socket.Close(); err != nil {
+		log.Println(err)
+	}
+}
+
+// Action は、MessageSocketに送られてくるActionの受信チャンネルを返します
+func (ms *MessageSocket) Action() <-chan domain.Action {
+	return ms.action
+}
+
+// Broadcast は、MessageSocketにBroadcastを渡し、websocketに送信します。
+func (ms *MessageSocket) Broadcast(b domain.Broadcast) {
+	log.Println(b)
+}
+
+// ValidationError は、MessageSocketにValidationErrorを渡し、websocketに送信します。
+func (ms *MessageSocket) ValidationError(e domain.ValidationError) {
+	log.Println(e)
+}
+
+const close = "close"
+
+// Close は、websocketをクローズします。
+func (ms *MessageSocket) Close() error {
+	ms.close <- close
+	if err := ms.socket.Close(); err != nil {
+		log.Println("error has occured as socket is closing")
+		return err
+	}
+	return nil
+}
+
+// Closed は、MessageSocketがクローズされることを通知するチャンネルを返します。
+func (ms *MessageSocket) Closed() <-chan string {
+	return ms.close
+}
