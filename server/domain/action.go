@@ -1,11 +1,11 @@
 package domain
 
 type Action struct {
-	seq           int
-	participantID int
-	kind          string
-	mapIDs        []int
-	msg           string
+	Seq           int
+	ParticipantID int
+	Kind          string
+	MapIDs        []int
+	Msg           string
 }
 
 type Broadcast struct {
@@ -18,8 +18,8 @@ type ValidationError struct {
 
 func NewChat(seq, participantID int, msg string) Action {
 	return Action{
-		seq:           seq,
-		participantID: participantID,
-		msg:           msg,
+		Seq:           seq,
+		ParticipantID: participantID,
+		Msg:           msg,
 	}
 }

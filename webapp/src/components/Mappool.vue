@@ -7,7 +7,7 @@
       </div>
     </div>
     <!-- <span>Checked Maps: {{ checkedMaps }}</span>
-    <br /> -->
+    <br />-->
     <button v-on:click="kickMap">Kick!</button>
   </div>
 </template>
@@ -42,8 +42,19 @@ export default Vue.component("Mappool", {
   },
   methods: {
     kickMap: function() {
-      console.log(this.checkedMaps);
-      this.socket.send(`I kick ${this.checkedMaps}`);
+      const self = this;
+      const checkedMapIDs = self.checkedMaps.map(function(name) {
+        return self.mappool.indexOf(name);
+      });
+      const action = {
+        seq: 0,
+        participantID: 19,
+        kind: "kick",
+        mapIDs: checkedMapIDs
+      };
+      console.table(action);
+      const payload = JSON.stringify(action);
+      this.socket.send(payload);
     }
   }
 });

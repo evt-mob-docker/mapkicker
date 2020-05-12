@@ -52,7 +52,7 @@ func (j *Judge) process(a Action) bool {
 }
 
 func (j *Judge) validateSequence(a Action) bool {
-	return a.seq == j.seq+1
+	return a.Seq == j.seq+1
 }
 
 func (j *Judge) run() {

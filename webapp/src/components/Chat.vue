@@ -7,7 +7,7 @@
     </ul>
     <form id="chat_form">
       <input type="text" id="chat_text" />
-    </form> -->
+    </form>-->
     <div class="chatbox">
       <div class="content">
         <li v-for="msg in messages" v-bind:key="msg.id">
@@ -59,7 +59,13 @@ export default {
         console.error("Error: no websocket connection");
         return false;
       }
-      socket.send(textInput.value);
+      const action = {
+        seq: 0,
+        participantID: 19,
+        kind: "chat",
+        msg: textInput.value
+      };
+      socket.send(JSON.stringify(action));
       textInput.value = "";
       return false;
     });
@@ -75,15 +81,15 @@ export default {
 }
 
 .chatbox .content {
-  font-family: arial,sans-serif;
+  font-family: arial, sans-serif;
   font-size: 13px;
   color: #333333;
   height: 100%;
   width: 100%;
-  overflow-y:auto;
-  overflow-x:auto;
-  padding:7px;
-  border:1px solid #cccccc;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding: 7px;
+  border: 1px solid #cccccc;
   background-color: #ffffff;
   line-height: 1.3em;
 }
@@ -91,9 +97,9 @@ export default {
 .chatbox .input {
   padding: 5px;
   background-color: #ffffff;
-  border-left:1px solid #cccccc;
-  border-right:1px solid #cccccc;
-  border-bottom:1px solid #cccccc;
+  border-left: 1px solid #cccccc;
+  border-right: 1px solid #cccccc;
+  border-bottom: 1px solid #cccccc;
   width: 100%;
 }
 </style>

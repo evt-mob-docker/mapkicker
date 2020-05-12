@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"encoding/json"
 	"log"
 	"mapkicker/domain"
 
@@ -42,8 +43,13 @@ func (ms *MessageSocket) listen() {
 func (ms *MessageSocket) run() {
 	for {
 		if _, msg, err := ms.socket.ReadMessage(); err == nil {
-			log.Printf("WebSocket received action %v\n", string(msg))
-			ms.action <- domain.Action{}
+			var action domain.Action
+			log.Println(string(msg))
+			if err := json.Unmarshal(msg, &action); err != nil {
+				log.Println(err)
+			}
+			log.Printf("WebSocket received action %v\n", action)
+			ms.action <- action
 		} else {
 			break
 		}
