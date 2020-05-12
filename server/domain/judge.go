@@ -11,7 +11,7 @@ type Judge struct {
 	leave        chan *Participant
 	action       chan Action
 	participants map[*Participant]bool
-	history      []Broadcast
+	history      []Action
 	seq          int // Actionの整合性を確保するための、受理ずみActionの最後のsequence番号
 }
 
@@ -24,6 +24,7 @@ func NewJudge(id int) *Judge {
 		leave:        make(chan *Participant),
 		action:       make(chan Action),
 		participants: make(map[*Participant]bool),
+		history:      make([]Action, 0),
 		seq:          -1,
 	}
 	j.run()
@@ -35,9 +36,7 @@ func (j *Judge) AddParticipant(p *Participant) {
 	log.Println("trying to join")
 	j.join <- p
 	log.Printf("Judge has %v participants now!\n", len(j.participants))
-	for _, msg := range j.history {
-		p.Broadcast(msg)
-	}
+	p.Broadcast(j.broadcast())
 }
 
 // Process はJudgeに処理すべきActionを送る。validationが成功した場合はtrue、失敗するとfalseを返す。
@@ -47,12 +46,24 @@ func (j *Judge) process(a Action) bool {
 		return false
 	}
 	j.seq++
-	log.Printf("Action %v was received", a)
+	log.Printf("Judge.process: Action %v was received", a)
+	j.history = append(j.history, a)
+	for p := range j.participants {
+		p.Broadcast(j.broadcast())
+	}
 	return true
 }
 
+func (j *Judge) broadcast() Broadcast {
+	return Broadcast{
+		Seq:     j.seq,
+		Actions: j.history,
+	}
+}
+
 func (j *Judge) validateSequence(a Action) bool {
-	return a.Seq == j.seq+1
+	// return a.Seq == j.seq+1
+	return true // TODO impl
 }
 
 func (j *Judge) run() {
@@ -72,12 +83,11 @@ func (j *Judge) run() {
 	log.Printf("Judge #%v is running\n", j.ID())
 }
 
-func (j *Judge) Broadcast(b Broadcast) {
-	j.history = append(j.history, b)
-	for p := range j.participants {
-		p.Broadcast(b)
-	}
-}
+// func (j *Judge) Broadcast(b Broadcast) {
+// 	for p := range j.participants {
+// 		p.Broadcast(b)
+// 	}
+// }
 
 // Participants は、Judgeに属する参加者のスライスを返す。
 func (j *Judge) Participants() []Participant {

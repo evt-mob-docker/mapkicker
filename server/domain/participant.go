@@ -1,5 +1,7 @@
 package domain
 
+import "log"
+
 // Participant は、Mapkickへの参加者を表す。
 type Participant struct {
 	msgChan MessageChannel
@@ -12,7 +14,7 @@ func NewParticipant(msgChan MessageChannel, j *Judge) *Participant {
 		msgChan: msgChan,
 		judge:   j,
 	}
-	p.run()
+	go p.run()
 	return p
 }
 
@@ -29,6 +31,7 @@ func (p *Participant) run() {
 
 // Broadcast take broadcast
 func (p *Participant) Broadcast(b Broadcast) {
+	log.Printf("Participant.Broadcast: %v\n", b)
 	p.msgChan.Broadcast(b)
 }
 

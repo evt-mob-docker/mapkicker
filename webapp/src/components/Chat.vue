@@ -39,10 +39,14 @@ export default {
     };
     socket.onmessage = e => {
       console.table(e.data);
-      this.messages.push({
-        id: this.messages.length,
-        content: e.data
-      });
+      const broadcast = JSON.parse(e.data);
+      const actions = broadcast.Actions;
+      if (actions.length > 0) {
+        this.messages.push({
+          id: this.messages.length,
+          content: actions[actions.length - 1].Msg
+        });
+      }
     };
     socket.onopen = () => {
       console.log(`Websocket connection to ${url} has opened.`);

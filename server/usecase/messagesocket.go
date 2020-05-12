@@ -66,7 +66,13 @@ func (ms *MessageSocket) Action() <-chan domain.Action {
 
 // Broadcast は、MessageSocketにBroadcastを渡し、websocketに送信します。
 func (ms *MessageSocket) Broadcast(b domain.Broadcast) {
-	log.Println(b)
+	log.Printf("MessageSOcket.Broadcast: %#v\n", b)
+	payload, err := json.Marshal(b)
+	if err != nil {
+		log.Printf("failed to marshal broadcast %#v\n, error %#v", b, err)
+	}
+	ms.socket.WriteMessage(websocket.TextMessage, payload)
+
 }
 
 // ValidationError は、MessageSocketにValidationErrorを渡し、websocketに送信します。

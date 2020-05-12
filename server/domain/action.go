@@ -9,8 +9,8 @@ type Action struct {
 }
 
 type Broadcast struct {
-	seq     int
-	actions []Action
+	Seq     int
+	Actions []Action
 }
 
 type ValidationError struct {

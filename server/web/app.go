@@ -62,7 +62,7 @@ func (a *App) GetMappool(w http.ResponseWriter, r *http.Request) {
 
 // Join は、新しい参加者をJudge(mapkick session)に参加させる。
 func (a *App) Join(w http.ResponseWriter, r *http.Request) {
-	log.Println("Access to /join")
+	log.Println("App.Join: Access to /join")
 	socket, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Fatalf("Join: %v", err)
