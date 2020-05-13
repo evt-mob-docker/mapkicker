@@ -39,16 +39,16 @@ go get github.com/codegangsta/gin
 
 ## Development modeで起動する
 
-### 古い手順 
 
-#### frontendの依存ライブラリ(毎回やる必要はない)
+
+### frontendの依存ライブラリ(毎回やる必要はない)
 
 ```sh
 cd webapp
 npm install
 ```
 
-#### 実行
+### 実行
 
 プロジェクトルートにおいて,
 
