@@ -1,5 +1,5 @@
 import React from 'react';
-import { Header, Icon, Item, Button, Rail, Segment, Grid } from 'semantic-ui-react';
+import { List, Header, Input, Item, Button, Rail, Segment, Grid, Container } from 'semantic-ui-react';
 import './App.css';
 
 const ButtonExampleButton = () => <Button>{'Kick'}</Button>;
@@ -19,27 +19,40 @@ const App = () => {
   return (
     <div className="App">
       <Header as="h1">Mapkicker</Header>
+      <Input icons='user' placeholder='あなたのIDを入力してください'></Input>
       <Grid centered columns={3}>
-        <Grid.Column>
-          <Header as="h2">使い方</Header>
-          <p>マップにチェックを入れてKickボタンを押します</p>
+        <Grid.Column >
+          <Header as='h2'>使い方</Header>
+          <p>
+            キックしたいマップにチェックを入れてKickボタンをクリックします。
+              </p>
         </Grid.Column>
         <Grid.Column>
           <Header as="h2">Mappool</Header>
-          <Item.Group as="ul">
+          <List size={'massive'}>
             {mappool.map(c => (
-              <Item key={c.id}>
-                {/* <Icon name="user circle" size="huge" /> */}
-                <Item.Content>
-                  <Item.Meta>{c.name}</Item.Meta>
-                </Item.Content>
-              </Item>
-            )
-            )} </Item.Group>
+              <List.Item key={c.id}>
+                {c.name}
+              </List.Item>
+            ))
+            }
+          </List>
           <ButtonExampleButton />
         </Grid.Column>
         <Grid.Column>
-          <Segment>Right Rail Content</Segment>
+          <Header as="h2">Log</Header>
+          <List>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+            <List.Item>a</List.Item>
+          </List>
         </Grid.Column>
       </Grid>
     </div >)
