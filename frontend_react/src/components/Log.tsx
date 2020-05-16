@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Card, Input, Item, Button, Rail, Segment, Grid, Container } from 'semantic-ui-react';
+import { List, Card } from 'semantic-ui-react';
 
 interface LogProps {
     actions: string[];
