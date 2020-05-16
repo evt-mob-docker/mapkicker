@@ -18,6 +18,8 @@ const App = () => {
   const url = "ws://localhost:8080/join";
   const s = new WebSocket(url);
   const [mapState, setMapState] = useState(initialMapstate);
+  const [seq, setSeq] = useState(0);
+  const [participantID, setParticipantID] = useState(-1);
   useEffect(() => {
     // websocket connection (1 connection for 1 App instance)
     s.onclose = () => {
@@ -31,6 +33,10 @@ const App = () => {
         const newState = message.gameState;
         console.table(newState.sc2maps);
         setMapState(newState.sc2maps);
+        setSeq(message.seq);
+      }
+      if (message.mode === "VALIDATION") {
+        setParticipantID(message.yourID);
       }
 
     };
@@ -45,8 +51,10 @@ const App = () => {
     }
   }, []);
   const onKick = (mapIDs: number[]) => {
-    console.log(`submit ${mapIDs} to the judge`);
-    s.send(JSON.stringify(kickAction(0, 0, mapIDs)));
+    console.log(`SUBMIT an Action from ${participantID}`);
+    const action = kickAction(seq, participantID, mapIDs);
+    console.table(action);
+    s.send(JSON.stringify(action));
   }
   return (
     <div className="App container">
@@ -66,6 +74,7 @@ interface Broadcast extends Message {
   mode: string;
   seq: number;
   gameState: any;
+  actions: Action[];
 }
 
 // const isBroadcast = (msg: Message is Broadcast): boolean => {
