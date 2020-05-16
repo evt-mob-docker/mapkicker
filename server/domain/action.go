@@ -65,6 +65,53 @@ type GameState struct {
 	NextPlayer int
 	SCMaps     []SCMap // ID昇順に格納する
 }
+
+func NewGameState() *GameState {
+	return &GameState{
+		SCMaps: scmaps,
+	}
+}
+
+var scmaps []SCMap = []SCMap{
+	SCMap{
+		ID:   0,
+		Name: "Map0",
+	},
+	SCMap{
+		ID:   1,
+		Name: "Map1",
+	},
+	SCMap{
+		ID:   2,
+		Name: "Map2",
+	},
+	SCMap{
+		ID:   3,
+		Name: "Map3",
+	},
+	SCMap{
+		ID:   4,
+		Name: "Map4",
+	},
+	SCMap{
+		ID:   5,
+		Name: "Map5",
+	},
+	SCMap{
+		ID:   6,
+		Name: "Map6",
+	},
+}
+
+func (gs *GameState) Kick(ids ...int) {
+	for _, id := range ids {
+		if id >= len(gs.SCMaps) {
+			continue
+		}
+		gs.SCMaps[id].Kicked = true
+	}
+}
+
 type SCMap struct {
 	ID     int
 	Name   string
