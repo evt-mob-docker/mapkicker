@@ -36,8 +36,8 @@ func (p *Participant) Broadcast(b Broadcast) {
 }
 
 // ValidationError takes validation error
-func (p *Participant) ValidationError(e ValidationError) {
-	p.msgChan.ValidationError(e)
+func (p *Participant) Validation(e Validation) {
+	p.msgChan.Validation(e)
 }
 
 // Leave は、JudgeをLeaveする

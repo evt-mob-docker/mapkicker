@@ -1,13 +1,5 @@
 <template>
   <div>
-    <!-- <ul class="messages">
-      <li v-for="msg in messages" v-bind:key="msg.id">
-        <b>{{msg.content}}</b>
-      </li>
-    </ul>
-    <form id="chat_form">
-      <input type="text" id="chat_text" />
-    </form>-->
     <div class="chatbox">
       <div class="content">
         <li v-for="msg in messages" v-bind:key="msg.id">
@@ -22,18 +14,24 @@
 </template>
 
 <script>
-// import axios from "axios";
+import axios from "axios";
 
 export default {
   name: "Chat",
   data() {
     return {
-      messages: []
+      messages: [],
+      mappool: []
     };
   },
   mounted() {
     const url = "ws://localhost:8080/join";
     const socket = new WebSocket(url);
+    
+    axios.get(`${process.env.VUE_APP_API_URL}/api/mappool`).then(response => {
+      return (this.mappool = response.data);
+    });
+
     socket.onclose = () => {
       console.log(`Websocket connection to ${url} has been closed.`);
     };
@@ -42,10 +40,20 @@ export default {
       const broadcast = JSON.parse(e.data);
       const actions = broadcast.Actions;
       if (actions.length > 0) {
-        this.messages.push({
-          id: this.messages.length,
-          content: actions[actions.length - 1].Msg
-        });
+        switch (actions[actions.length-1].Kind){
+          case "chat":
+            this.messages.push({
+              id: this.messages.length,
+              content: actions[actions.length - 1].Msg
+            });
+            break;
+          case "kick":
+              this.messages.push({
+              id: this.messages.length,
+              content: actions[actions.length - 1].MapIDs.map(i => this.mappool[i])
+            });
+            break;
+        }
       }
     };
     socket.onopen = () => {

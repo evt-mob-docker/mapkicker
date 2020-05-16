@@ -10,20 +10,20 @@ import (
 
 // MessageSocket は、websocket.Connを利用したdomain.MessageChannelの実装です
 type MessageSocket struct {
-	socket          *websocket.Conn
-	action          chan domain.Action
-	broadcast       chan domain.Broadcast
-	validationError chan domain.ValidationError
-	close           chan string
+	socket     *websocket.Conn
+	action     chan domain.Action
+	broadcast  chan domain.Broadcast
+	validation chan domain.Validation
+	close      chan string
 }
 
 // NewMessageSocket は、websocketからMessageChannelを生成して、actionをlistenします
 func NewMessageSocket(conn *websocket.Conn) domain.MessageChannel {
 	ms := &MessageSocket{
-		socket:          conn,
-		action:          make(chan domain.Action),
-		broadcast:       make(chan domain.Broadcast),
-		validationError: make(chan domain.ValidationError),
+		socket:     conn,
+		action:     make(chan domain.Action),
+		broadcast:  make(chan domain.Broadcast),
+		validation: make(chan domain.Validation),
 	}
 	go ms.listen()
 	go ms.run()
@@ -76,7 +76,7 @@ func (ms *MessageSocket) Broadcast(b domain.Broadcast) {
 }
 
 // ValidationError は、MessageSocketにValidationErrorを渡し、websocketに送信します。
-func (ms *MessageSocket) ValidationError(e domain.ValidationError) {
+func (ms *MessageSocket) Validation(e domain.Validation) {
 	log.Println(e)
 }
 

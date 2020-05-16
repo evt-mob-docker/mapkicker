@@ -10,13 +10,12 @@ import (
 
 // App is application
 type App struct {
-	r        domain.Repository
 	handlers map[string]http.HandlerFunc
 	judge    *domain.Judge
 }
 
 // NewApp creates new app object
-func NewApp(r domain.Repository, cors bool) App {
+func NewApp(cors bool) App {
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true } // TODO: コンストラクタにしてまとめる
 	app := App{
 		handlers: make(map[string]http.HandlerFunc),

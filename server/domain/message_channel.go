@@ -8,6 +8,6 @@ type MessageChannel interface {
 	Action() <-chan Action
 	Closed() <-chan string
 	Broadcast(b Broadcast)
-	ValidationError(e ValidationError)
+	Validation(e Validation)
 	io.Closer
 }

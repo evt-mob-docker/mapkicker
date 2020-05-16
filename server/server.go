@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"log"
-	"mapkicker/repository"
 	"mapkicker/web"
 	"os"
 
@@ -16,10 +15,9 @@ func main() {
 		log.Fatal(err)
 	}
 	defer d.Close()
-	r := repository.NewRepository()
 	// CORS is enabled only in prod profile
 	cors := os.Getenv("profile") == "prod"
-	app := web.NewApp(r, cors)
+	app := web.NewApp(cors)
 	err = app.Serve()
 	log.Println("Error", err)
 }
