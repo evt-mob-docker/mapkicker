@@ -15,6 +15,7 @@ type Judge struct {
 	participants map[int]*Participant
 	history      []Action
 	seq          int // Actionの整合性を確保するための、受理ずみActionの最後のsequence番号
+	gameState    *GameState
 }
 
 // NewJudge は、指定したidを持つJudgeインスタンスを生成する。
@@ -29,6 +30,7 @@ func NewJudge(id int) *Judge {
 		participants: make(map[int]*Participant),
 		history:      make([]Action, 0),
 		seq:          -1,
+		gameState:    NewGameState(),
 	}
 	j.run()
 	return j
@@ -51,6 +53,9 @@ func (j *Judge) process(a Action) bool {
 	j.seq++
 	log.Printf("Judge.process: Action %v was received", a)
 	j.history = append(j.history, a)
+	if a.Kind == "kick" {
+		j.gameState.Kick(a.MapIDs...)
+	}
 	for _, p := range j.participants {
 		p.Broadcast(j.broadcast())
 	}
@@ -58,10 +63,7 @@ func (j *Judge) process(a Action) bool {
 }
 
 func (j *Judge) broadcast() Broadcast {
-	return Broadcast{
-		Seq:     j.seq,
-		Actions: j.history,
-	}
+	return NewBroadcast(j.seq, *j.gameState, j.history)
 }
 
 func (j *Judge) validateSequence(a Action) bool {
@@ -77,10 +79,9 @@ func (j *Judge) run() {
 				log.Println("Judge.run(): new participant are joinning")
 				p.id = j.cnt // Participant.idは 0-indexed
 				j.participants[j.cnt] = p
-				p.Validation(Validation{ // pにvalidationを返す
-					Valid:  true,
-					YourID: p.id,
-				})
+				p.Validation(NewValidation( // pにvalidationを返す
+					true, "", p.id,
+				))
 				j.cnt++
 			case p := <-j.leave:
 				delete(j.participants, p.id)
@@ -91,12 +92,6 @@ func (j *Judge) run() {
 	}()
 	log.Printf("Judge #%v is running\n", j.ID())
 }
-
-// func (j *Judge) Broadcast(b Broadcast) {
-// 	for p := range j.participants {
-// 		p.Broadcast(b)
-// 	}
-// }
 
 // Participants は、Judgeに属する参加者のスライスを返す。
 func (j *Judge) Participants() []Participant {

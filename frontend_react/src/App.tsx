@@ -4,10 +4,20 @@ import './App.css';
 import Mapkick from './components/MapKick';
 import NamePanel from './components/NamePanel';
 import Log from './components/Log';
+const initialMapstate = [
+  { id: 0, name: "Eternal Empire LE" },
+  { id: 1, name: "Ever Dream LE" },
+  { id: 2, name: "Golden Wall LE " },
+  { id: 3, name: "Nightshade LE" },
+  { id: 4, name: "Purity and Industry LE" },
+  { id: 5, name: "Simulacrum LE" },
+  { id: 6, name: "Zen LE" },
+];
 
 const App = () => {
   const url = "ws://localhost:8080/join";
   const s = new WebSocket(url);
+  const [mapState, setMapState] = useState(initialMapstate);
   useEffect(() => {
     // websocket connection (1 connection for 1 App instance)
     s.onclose = () => {
@@ -15,7 +25,14 @@ const App = () => {
     };
     s.onmessage = e => {
       console.log("received broadcast");
-      console.table(e.data);
+      const message = JSON.parse(e.data);
+      console.table(message);
+      if (message.mode === "BROADCAST") {
+        const newState = message.gameState;
+        console.table(newState.sc2maps);
+        setMapState(newState.sc2maps);
+      }
+
     };
     s.onopen = () => {
       console.log(`Webs connection to ${url} has opened.`);
@@ -27,15 +44,6 @@ const App = () => {
       console.log("unmount.");
     }
   }, []);
-  const mappool = [
-    { id: 0, name: "Eternal Empire LE", kicked: true },
-    { id: 1, name: "Ever Dream LE" },
-    { id: 2, name: "Golden Wall LE " },
-    { id: 3, name: "Nightshade LE" },
-    { id: 4, name: "Purity and Industry LE" },
-    { id: 5, name: "Simulacrum LE", kicked: true },
-    { id: 6, name: "Zen LE" },
-  ];
   const onKick = (mapIDs: number[]) => {
     console.log(`submit ${mapIDs} to the judge`);
     s.send(JSON.stringify(kickAction(0, 0, mapIDs)));
@@ -44,13 +52,27 @@ const App = () => {
     <div className="App container">
       <Header as="h1">Mapkicker</Header>
       <NamePanel></NamePanel>
-      <Mapkick sc2maps={mappool} onKick={onKick}></Mapkick>
+      <Mapkick sc2maps={mapState} onKick={onKick}></Mapkick>
       <Log></Log>
     </div>
   )
 }
 
-interface Action {
+interface Message {
+  mode: string;
+}
+
+interface Broadcast extends Message {
+  mode: string;
+  seq: number;
+  gameState: any;
+}
+
+// const isBroadcast = (msg: Message is Broadcast): boolean => {
+
+// }
+
+interface Action extends Message {
   mode: string;
   seq: number;
   actionerID: number;
@@ -59,7 +81,7 @@ interface Action {
   sentence?: string;
 }
 
-interface Validation {
+interface Validation extends Message {
   mode: string;
   valid: boolean;
   error: string;
@@ -74,3 +96,4 @@ const kickAction = (seq: number, actioner: number, mapIDs: number[]): Action => 
   mapIDs: mapIDs,
 });
 export default App;
+

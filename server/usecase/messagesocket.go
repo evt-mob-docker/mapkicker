@@ -36,6 +36,20 @@ func (ms *MessageSocket) listen() {
 		case <-ms.close:
 			log.Println("closing...")
 			break
+		case b := <-ms.broadcast:
+			payload, err := json.Marshal(b)
+			if err != nil {
+				log.Printf("failed to marshal broadcast %#v\n, error %#v", b, err)
+				continue
+			}
+			ms.socket.WriteMessage(websocket.TextMessage, payload)
+		case v := <-ms.validation:
+			payload, err := json.Marshal(v)
+			if err != nil {
+				log.Printf("failed to marshal validation %#v\n, error %#v", v, err)
+				continue
+			}
+			ms.socket.WriteMessage(websocket.TextMessage, payload)
 		}
 	}
 }
@@ -67,22 +81,13 @@ func (ms *MessageSocket) Action() <-chan domain.Action {
 // Broadcast は、MessageSocketにBroadcastを渡し、websocketに送信します。
 func (ms *MessageSocket) Broadcast(b domain.Broadcast) {
 	log.Printf("MessageSocket.Broadcast: %#v\n", b)
-	payload, err := json.Marshal(b)
-	if err != nil {
-		log.Printf("failed to marshal broadcast %#v\n, error %#v", b, err)
-	}
-	ms.socket.WriteMessage(websocket.TextMessage, payload)
-
+	ms.broadcast <- b
 }
 
-// ValidationError は、MessageSocketにValidationErrorを渡し、websocketに送信します。
+// Validation は、MessageSocketにValidationErrorを渡し、websocketに送信します。
 func (ms *MessageSocket) Validation(v domain.Validation) {
 	log.Printf("MessageSocket.Validation: %#v\n", v)
-	payload, err := json.Marshal(v)
-	if err != nil {
-		log.Printf("failed to marshal validation %#v\n, error %#v", v, err)
-	}
-	ms.socket.WriteMessage(websocket.TextMessage, payload)
+	ms.validation <- v
 }
 
 const close = "close"

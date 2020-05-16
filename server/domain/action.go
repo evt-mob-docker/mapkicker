@@ -1,16 +1,16 @@
 package domain
 
 type Message struct {
-	Mode string
+	Mode string `json:"mode"`
 }
 
 type Action struct {
 	Message
-	Seq        int
-	ActionerID int
-	Kind       string
-	MapIDs     []int
-	Sentence   string
+	Seq        int    `json:"seq"`
+	ActionerID int    `json:"actionerID"`
+	Kind       string `json:"kind"`
+	MapIDs     []int  `json:"mapIDs"`
+	Sentence   string `json"sentence"`
 }
 
 func NewAction(seq, actioner int, kind string, mapIDs []int, sentence string) Action {
@@ -26,9 +26,9 @@ func NewAction(seq, actioner int, kind string, mapIDs []int, sentence string) Ac
 
 type Broadcast struct {
 	Message
-	Seq       int
-	GameState GameState
-	Actions   []Action
+	Seq       int       `json:"seq"`
+	GameState GameState `json:"gameState"`
+	Actions   []Action  `json:"actions"`
 }
 
 func NewBroadcast(seq int, state GameState, actions []Action) Broadcast {
@@ -40,16 +40,11 @@ func NewBroadcast(seq int, state GameState, actions []Action) Broadcast {
 	}
 }
 
-// func (b Broadcast) GetSeq() int {
-// 	return b.Seq
-// }
-// b.GetSeq()
-
 type Validation struct { // Validtionは、単一のParticipantに送信するJudgeからのメッセージ
 	Message
-	Valid  bool   // errorの場合false
-	Error  string // errorの場合メッセージ、そうでない場合""
-	YourID int    // 送り先のParticipant ID
+	Valid  bool   `json:"valid"`  // errorの場合false
+	Error  string `json:"error"`  // errorの場合メッセージ、そうでない場合""
+	YourID int    `json:"yourID"` // 送り先のParticipant ID
 }
 
 func NewValidation(valid bool, err string, id int) Validation {
@@ -62,8 +57,8 @@ func NewValidation(valid bool, err string, id int) Validation {
 }
 
 type GameState struct {
-	NextPlayer int
-	SCMaps     []SCMap // ID昇順に格納する
+	NextPlayer int     `json:"nextPlayer"`
+	SCMaps     []SCMap `json:"sc2maps"` // ID昇順に格納する
 }
 
 func NewGameState() *GameState {
@@ -75,31 +70,31 @@ func NewGameState() *GameState {
 var scmaps []SCMap = []SCMap{
 	SCMap{
 		ID:   0,
-		Name: "Map0",
+		Name: "Eternal Empire LE",
 	},
 	SCMap{
 		ID:   1,
-		Name: "Map1",
+		Name: "Ever Dream LE",
 	},
 	SCMap{
 		ID:   2,
-		Name: "Map2",
+		Name: "Golden Wall LE",
 	},
 	SCMap{
 		ID:   3,
-		Name: "Map3",
+		Name: "Nightshade LE",
 	},
 	SCMap{
 		ID:   4,
-		Name: "Map4",
+		Name: "Purity and Industry LE",
 	},
 	SCMap{
 		ID:   5,
-		Name: "Map5",
+		Name: "Simulacrum LE",
 	},
 	SCMap{
 		ID:   6,
-		Name: "Map6",
+		Name: "Zen LE",
 	},
 }
 
@@ -113,7 +108,7 @@ func (gs *GameState) Kick(ids ...int) {
 }
 
 type SCMap struct {
-	ID     int
-	Name   string
-	Kicked bool
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	Kicked bool   `json:"kicked"`
 }
