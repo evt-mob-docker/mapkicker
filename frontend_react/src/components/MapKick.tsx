@@ -21,6 +21,7 @@ const MapKick: FC<MapKickProps> = props => {
             {sc2maps.map(sc2map => {
                 return <MapPanel key={sc2map.id} {...sc2map}></MapPanel>;
             })}
+            <Button onClick={() => console.log("KICK BUTTON!")} color="red" fluid>Kick</Button>
         </Card>
     );
 }

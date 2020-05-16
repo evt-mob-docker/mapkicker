@@ -11,12 +11,12 @@ const ButtonExampleButton = () => <Button>{'Kick'}</Button>;
 
 const App = () => {
   const mappool = [
-    { id: 0, name: "Eternal Empire LE" },
+    { id: 0, name: "Eternal Empire LE", kicked: true },
     { id: 1, name: "Ever Dream LE" },
     { id: 2, name: "Golden Wall LE " },
     { id: 3, name: "Nightshade LE" },
     { id: 4, name: "Purity and Industry LE" },
-    { id: 5, name: "Simulacrum LE" },
+    { id: 5, name: "Simulacrum LE", kicked: true },
     { id: 6, name: "Zen LE" },
   ];
   return (

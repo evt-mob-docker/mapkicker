@@ -13,7 +13,9 @@ const MapPanel: FC<SC2Map> = props => {
     return (
         <Form.Field
             control={Checkbox}
-            label={name}>
+            label={name}
+            disabled={kicked}
+        >
             ></Form.Field>
     )
 }
