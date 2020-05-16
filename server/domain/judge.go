@@ -6,11 +6,13 @@ import (
 
 // Judge は、1つのマップキックセッションの進行役を表す。
 type Judge struct {
-	id           int
-	join         chan *Participant
-	leave        chan *Participant
-	action       chan Action
-	participants map[*Participant]bool
+	id     int
+	cnt    int // これまでに登録したparticipantの総数(すでにleaveしたものも含む)
+	join   chan *Participant
+	leave  chan *Participant
+	action chan Action
+	// participants map[*Participant]bool
+	participants map[int]*Participant
 	history      []Action
 	seq          int // Actionの整合性を確保するための、受理ずみActionの最後のsequence番号
 }
@@ -19,11 +21,12 @@ type Judge struct {
 // このidはchallongeトーナメントの試合IDを用いるので、外部から指定されるべきである。
 func NewJudge(id int) *Judge {
 	j := &Judge{
-		id:           id,
-		join:         make(chan *Participant),
-		leave:        make(chan *Participant),
-		action:       make(chan Action),
-		participants: make(map[*Participant]bool),
+		id:     id,
+		join:   make(chan *Participant),
+		leave:  make(chan *Participant),
+		action: make(chan Action),
+		// participants: make(map[*Participant]bool),
+		participants: make(map[int]*Participant),
 		history:      make([]Action, 0),
 		seq:          -1,
 	}
@@ -48,7 +51,7 @@ func (j *Judge) process(a Action) bool {
 	j.seq++
 	log.Printf("Judge.process: Action %v was received", a)
 	j.history = append(j.history, a)
-	for p := range j.participants {
+	for _, p := range j.participants {
 		p.Broadcast(j.broadcast())
 	}
 	return true
@@ -72,9 +75,15 @@ func (j *Judge) run() {
 			select {
 			case p := <-j.join:
 				log.Println("Judge.run(): new participant are joinning")
-				j.participants[p] = true
+				p.id = j.cnt // Participant.idは 0-indexed
+				j.participants[j.cnt] = p
+				p.Validation(Validation{ // pにvalidationを返す
+					Valid:  true,
+					YourID: p.id,
+				})
+				j.cnt++
 			case p := <-j.leave:
-				delete(j.participants, p)
+				delete(j.participants, p.id)
 			case a := <-j.action:
 				j.process(a)
 			}

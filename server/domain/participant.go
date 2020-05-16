@@ -6,6 +6,7 @@ import "log"
 type Participant struct {
 	msgChan MessageChannel
 	judge   *Judge
+	id      int
 }
 
 // NewParticipant は、新しいParticipantを生成し、judgeに紐付けて起動する。
@@ -35,7 +36,7 @@ func (p *Participant) Broadcast(b Broadcast) {
 	p.msgChan.Broadcast(b)
 }
 
-// ValidationError takes validation error
+// Validation takes validation message
 func (p *Participant) Validation(e Validation) {
 	p.msgChan.Validation(e)
 }
