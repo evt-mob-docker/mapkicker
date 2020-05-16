@@ -1,6 +1,9 @@
 import React from 'react';
 import { List, Header, Input, Item, Button, Rail, Segment, Grid, Container } from 'semantic-ui-react';
 import './App.css';
+import Mapkick from './components/MapKick';
+import NamePanel from './components/NamePanel';
+import Log from './components/Log';
 
 const ButtonExampleButton = () => <Button>{'Kick'}</Button>;
 
@@ -17,45 +20,12 @@ const App = () => {
     { id: 6, name: "Zen LE" },
   ];
   return (
-    <div className="App">
+    <div className="App container">
       <Header as="h1">Mapkicker</Header>
-      <Input icons='user' placeholder='あなたのIDを入力してください'></Input>
-      <Grid centered columns={3}>
-        <Grid.Column >
-          <Header as='h2'>使い方</Header>
-          <p>
-            キックしたいマップにチェックを入れてKickボタンをクリックします。
-              </p>
-        </Grid.Column>
-        <Grid.Column>
-          <Header as="h2">Mappool</Header>
-          <List size={'massive'}>
-            {mappool.map(c => (
-              <List.Item key={c.id}>
-                {c.name}
-              </List.Item>
-            ))
-            }
-          </List>
-          <ButtonExampleButton />
-        </Grid.Column>
-        <Grid.Column>
-          <Header as="h2">Log</Header>
-          <List>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-            <List.Item>a</List.Item>
-          </List>
-        </Grid.Column>
-      </Grid>
-    </div >)
-};
-
+      <NamePanel></NamePanel>
+      <Mapkick sc2maps={mappool}></Mapkick>
+      <Log></Log>
+    </div>
+  )
+}
 export default App;
