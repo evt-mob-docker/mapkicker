@@ -37,8 +37,8 @@ func (a *App) Serve() error {
 	for path, handler := range a.handlers {
 		http.Handle(path, handler)
 	}
-	log.Println("Backend server is available on port 8081")
-	return http.ListenAndServe(":8081", nil)
+	log.Println("Backend server is available on port 8080")
+	return http.ListenAndServe(":8080", nil)
 }
 
 // GetMappool returns mappool

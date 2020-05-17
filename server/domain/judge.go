@@ -56,6 +56,11 @@ func (j *Judge) process(a Action) bool {
 	if a.Kind == "kick" {
 		j.gameState.Kick(a.MapIDs...)
 	}
+	if a.Kind == "register" {
+		id := a.ActionerID
+		name := a.Sentence
+		j.gameState.Participants[id].Name = name
+	}
 	for _, p := range j.participants {
 		p.Broadcast(j.broadcast())
 	}
@@ -77,14 +82,16 @@ func (j *Judge) run() {
 			select {
 			case p := <-j.join:
 				log.Println("Judge.run(): new participant are joinning")
-				p.id = j.cnt // Participant.idは 0-indexed
+				p.ID = j.cnt // Participant.idは 0-indexed
 				j.participants[j.cnt] = p
+				log.Println("%#v,", *p)
+				j.gameState.Participants = append(j.gameState.Participants, p)
 				p.Validation(NewValidation( // pにvalidationを返す
-					true, "", p.id,
+					true, "", p.ID,
 				))
 				j.cnt++
 			case p := <-j.leave:
-				delete(j.participants, p.id)
+				delete(j.participants, p.ID)
 			case a := <-j.action:
 				j.process(a)
 			}

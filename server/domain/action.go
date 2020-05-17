@@ -57,8 +57,9 @@ func NewValidation(valid bool, err string, id int) Validation {
 }
 
 type GameState struct {
-	NextPlayer int     `json:"nextPlayer"`
-	SCMaps     []SCMap `json:"sc2maps"` // ID昇順に格納する
+	NextPlayer   int            `json:"nextPlayer"`
+	SCMaps       []SCMap        `json:"sc2maps"`      // ID昇順に格納する
+	Participants []*Participant `json:"participants"` // 参加者のidと名前の一覧
 }
 
 func NewGameState() *GameState {

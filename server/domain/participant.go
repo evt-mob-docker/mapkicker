@@ -4,9 +4,10 @@ import "log"
 
 // Participant は、Mapkickへの参加者を表す。
 type Participant struct {
-	msgChan MessageChannel
-	judge   *Judge
-	id      int
+	msgChan MessageChannel `json:"-"`
+	judge   *Judge         `json:"-"`
+	ID      int            `json:"id"`
+	Name    string         `json:"name"`
 }
 
 // NewParticipant は、新しいParticipantを生成し、judgeに紐付けて起動する。

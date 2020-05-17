@@ -4,23 +4,22 @@ import './App.css';
 import Mapkick from './components/MapKick';
 import NamePanel from './components/NamePanel';
 import Log from './components/Log';
-const initialMapstate = [
-  { id: 0, name: "Eternal Empire LE" },
-  { id: 1, name: "Ever Dream LE" },
-  { id: 2, name: "Golden Wall LE " },
-  { id: 3, name: "Nightshade LE" },
-  { id: 4, name: "Purity and Industry LE" },
-  { id: 5, name: "Simulacrum LE" },
-  { id: 6, name: "Zen LE" },
-];
+import { SC2Map, InitialGameState, Action, Validation, Broadcast, isBroadcast, isValidation, kickAction, Participant, registerNameAction } from './domain/models';
+const emptyActions: Action[] = [];
+let emptySocket: WebSocket;
 
 const App = () => {
   const url = "ws://localhost:8080/join";
-  const s = new WebSocket(url);
-  const [mapState, setMapState] = useState(initialMapstate);
+  // TODO: あとでcustom hookにする
+  const [gameState, setGameState] = useState(InitialGameState());
   const [seq, setSeq] = useState(0);
+  const [s, setSocket] = useState(emptySocket);
+
   const [participantID, setParticipantID] = useState(-1);
+  const [actions, setActions] = useState(emptyActions);
   useEffect(() => {
+    const s = new WebSocket(url);
+    setSocket(s);
     // websocket connection (1 connection for 1 App instance)
     s.onclose = () => {
       console.log(`Webs connection to ${url} has been closed.`);
@@ -29,11 +28,11 @@ const App = () => {
       console.log("received broadcast");
       const message = JSON.parse(e.data);
       console.table(message);
-      if (message.mode === "BROADCAST") {
+      if (isBroadcast(message)) {
         const newState = message.gameState;
-        console.table(newState.sc2maps);
-        setMapState(newState.sc2maps);
+        setGameState(newState);
         setSeq(message.seq);
+        setActions(message.actions);
       }
       if (message.mode === "VALIDATION") {
         setParticipantID(message.yourID);
@@ -56,53 +55,22 @@ const App = () => {
     console.table(action);
     s.send(JSON.stringify(action));
   }
+  const onRegisterName = (name: string) => {
+    console.log(`id: ${participantID}, name = ${name}`);
+    const action = registerNameAction(seq, participantID, name);
+    s.send(JSON.stringify(action));
+  }
   return (
     <div className="App container">
       <Header as="h1">Mapkicker</Header>
-      <NamePanel></NamePanel>
-      <Mapkick sc2maps={mapState} onKick={onKick}></Mapkick>
-      <Log></Log>
+      <NamePanel id={participantID} onClick={onRegisterName}></NamePanel>
+      <Mapkick sc2maps={gameState.sc2maps} onKick={onKick}></Mapkick>
+      <Log
+        actions={actions}
+        state={gameState}
+      ></Log>
     </div>
   )
 }
-
-interface Message {
-  mode: string;
-}
-
-interface Broadcast extends Message {
-  mode: string;
-  seq: number;
-  gameState: any;
-  actions: Action[];
-}
-
-// const isBroadcast = (msg: Message is Broadcast): boolean => {
-
-// }
-
-interface Action extends Message {
-  mode: string;
-  seq: number;
-  actionerID: number;
-  kind: string;
-  mapIDs?: number[];
-  sentence?: string;
-}
-
-interface Validation extends Message {
-  mode: string;
-  valid: boolean;
-  error: string;
-  yourID: number;
-}
-
-const kickAction = (seq: number, actioner: number, mapIDs: number[]): Action => ({
-  mode: "ACTION",
-  seq: seq,
-  actionerID: actioner,
-  kind: "kick", // TOOD: delete
-  mapIDs: mapIDs,
-});
 export default App;
 
